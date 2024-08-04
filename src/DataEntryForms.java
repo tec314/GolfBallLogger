@@ -27,6 +27,9 @@ import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.EtchedBorder;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 public class DataEntryForms {
 
 	private JFrame frame;
@@ -87,6 +90,26 @@ public class DataEntryForms {
 		
 	}
 
+	public void deleteFromDatabase(String b, String t, String c, String l, String p, String bn) {
+    	String sql = "DELETE FROM dataform WHERE Brand = ? AND Type = ? AND Color = ? AND Logo = ? AND Pattern = ? AND BallNumber = ?";
+    	try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, b);
+			pst.setString(2, t);
+			pst.setString(3, c);
+			pst.setString(4, l);
+			pst.setString(5, p);
+			pst.setString(6, bn);
+			
+			
+			pst.execute();
+			rs.close();
+			pst.close();
+		} catch(Exception e1) {
+			JOptionPane.showMessageDialog(null, e1);
+		}
+	}
+	
 	/**
 	 * Create the application.
 	 */
@@ -98,6 +121,7 @@ public class DataEntryForms {
 		table.setModel(model);
 		conn = DataEntryClass.ConnectDB();
 		
+		model.setRowCount(0);
 		updateTable();
 	}
 
@@ -114,9 +138,14 @@ public class DataEntryForms {
 		frame.getContentPane().add(panel);
 		panel.setLayout(new BorderLayout(0, 0));
 		
-		JPanel InputPanel = new JPanel();
-		InputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel.add(InputPanel, BorderLayout.NORTH);
+		JPanel headerPanel = new JPanel();
+		frame.getContentPane().add(panel);
+		headerPanel.setLayout(new BorderLayout(0, 0));
+
+		JPanel inputPanel = new JPanel();
+		inputPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		
+		JPanel previewPanel = new JPanel();
 		
 		JLabel lblNewLabel = new JLabel("Ball Brand");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -137,93 +166,175 @@ public class DataEntryForms {
 		JLabel lblNewLabel_2 = new JLabel("Color");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JPanel ColorPanel = new JPanel();
-		ColorPanel.setLayout(new GridLayout(1, 0, 0, 0));
-		
-		JPanel panel_13 = new JPanel();
-		panel_13.setBackground(new Color(255, 255, 255));
-		ColorPanel.add(panel_13);
-		
-		JLabel lblNewLabel_6 = new JLabel("W");
-		panel_13.add(lblNewLabel_6);
-		
-		JPanel panel_5 = new JPanel();
-		panel_5.setBackground(new Color(255, 0, 0));
-		ColorPanel.add(panel_5);
-		
-		JLabel lblNewLabel_7 = new JLabel("R");
-		panel_5.add(lblNewLabel_7);
-		
-		JPanel panel_6 = new JPanel();
-		panel_6.setBackground(new Color(255, 128, 0));
-		ColorPanel.add(panel_6);
-		
-		JLabel lblNewLabel_8 = new JLabel("O");
-		panel_6.add(lblNewLabel_8);
-		
-		JPanel panel_7 = new JPanel();
-		panel_7.setBackground(new Color(255, 255, 0));
-		ColorPanel.add(panel_7);
-		
-		JLabel lblNewLabel_9 = new JLabel("Y");
-		panel_7.add(lblNewLabel_9);
-		
-		JPanel panel_8 = new JPanel();
-		panel_8.setBackground(new Color(198, 255, 0));
-		ColorPanel.add(panel_8);
-		
-		JLabel lblNewLabel_10 = new JLabel("L");
-		panel_8.add(lblNewLabel_10);
-		
-		JPanel panel_9 = new JPanel();
-		panel_9.setBackground(new Color(0, 255, 0));
-		ColorPanel.add(panel_9);
-		
-		JLabel lblNewLabel_11 = new JLabel("G");
-		panel_9.add(lblNewLabel_11);
-		
-		JPanel panel_10 = new JPanel();
-		panel_10.setBackground(new Color(0, 128, 0));
-		ColorPanel.add(panel_10);
-		
-		JLabel lblNewLabel_12 = new JLabel("F");
-		panel_10.add(lblNewLabel_12);
-		
-		JPanel panel_11 = new JPanel();
-		panel_11.setBackground(new Color(0, 206, 230));
-		ColorPanel.add(panel_11);
-		
-		JLabel lblNewLabel_13 = new JLabel("C");
-		panel_11.add(lblNewLabel_13);
-		
-		JPanel panel_12 = new JPanel();
-		panel_12.setBackground(new Color(0, 128, 255));
-		ColorPanel.add(panel_12);
-		
-		JLabel lblNewLabel_14 = new JLabel("B");
-		panel_12.add(lblNewLabel_14);
-		
-		JPanel panel_14 = new JPanel();
-		panel_14.setBackground(new Color(255, 0, 255));
-		ColorPanel.add(panel_14);
-		
-		JLabel lblNewLabel_15 = new JLabel("P");
-		panel_14.add(lblNewLabel_15);
-		
-		JPanel panel_15 = new JPanel();
-		panel_15.setBackground(new Color(128, 0, 255));
-		ColorPanel.add(panel_15);
-		
-		JLabel lblNewLabel_16 = new JLabel("V");
-		panel_15.add(lblNewLabel_16);
+		JPanel colorPanel = new JPanel();
+		colorPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		newColorText = new JTextField();
 		newColorText.setColumns(10);
+		newColorText.setText("WHITE"); // Default Value
+		
+		GifPanel gifPanel = new GifPanel("C:/Users/tec31/eclipse-workspace/GolfBallLog/res/color_preview.gif", 3);
+		
+		JPanel whitePanel = new JPanel();
+		whitePanel.setBackground(new Color(255, 255, 255));
+		whitePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("WHITE");
+            	gifPanel.setColorMask(255, 255, 255);
+            }
+        });
+		colorPanel.add(whitePanel);	
+		JLabel lblNewLabel_6 = new JLabel("W");
+		whitePanel.add(lblNewLabel_6);
+		
+		JPanel redPanel = new JPanel();
+		redPanel.setBackground(new Color(255, 0, 0));
+		redPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("RED");
+            	gifPanel.setColorMask(255, 0, 0);
+            }
+        });
+		colorPanel.add(redPanel);
+		JLabel lblNewLabel_7 = new JLabel("R");
+		redPanel.add(lblNewLabel_7);
+		
+		JPanel orangePanel = new JPanel();
+		orangePanel.setBackground(new Color(255, 128, 0));
+		orangePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("ORANGE");
+            	gifPanel.setColorMask(255, 128, 0);
+            }
+        });
+		colorPanel.add(orangePanel);
+		JLabel lblNewLabel_8 = new JLabel("O");
+		orangePanel.add(lblNewLabel_8);
+		
+		JPanel yellowPanel = new JPanel();
+		yellowPanel.setBackground(new Color(255, 255, 0));
+		yellowPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("YELLOW");
+            	gifPanel.setColorMask(255, 255, 0);
+            }
+        });
+		colorPanel.add(yellowPanel);	
+		JLabel lblNewLabel_9 = new JLabel("Y");
+		yellowPanel.add(lblNewLabel_9);
+		
+		JPanel limePanel = new JPanel();
+		limePanel.setBackground(new Color(198, 255, 0));
+		limePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("LIME");
+            	gifPanel.setColorMask(198, 255, 0);
+            }
+        });
+		colorPanel.add(limePanel);
+		JLabel lblNewLabel_10 = new JLabel("L");
+		limePanel.add(lblNewLabel_10);
+		
+		JPanel greenPanel = new JPanel();
+		greenPanel.setBackground(new Color(0, 255, 0));
+		greenPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("GREEN");
+            	gifPanel.setColorMask(0, 255, 0);
+            }
+        });
+		colorPanel.add(greenPanel);
+		JLabel lblNewLabel_11 = new JLabel("G");
+		greenPanel.add(lblNewLabel_11);
+		
+		JPanel forestPanel = new JPanel();
+		forestPanel.setBackground(new Color(0, 128, 0));
+		forestPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("FOREST");
+            	gifPanel.setColorMask(0, 128, 0);
+            }
+        });
+		colorPanel.add(forestPanel);
+		JLabel lblNewLabel_12 = new JLabel("F");
+		forestPanel.add(lblNewLabel_12);
+		
+		JPanel cyanPanel = new JPanel();
+		cyanPanel.setBackground(new Color(0, 206, 230));
+		cyanPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("CYAN");
+            	gifPanel.setColorMask(0, 206, 230);
+            }
+        });
+		colorPanel.add(cyanPanel);
+		JLabel lblNewLabel_13 = new JLabel("C");
+		cyanPanel.add(lblNewLabel_13);
+		
+		JPanel bluePanel = new JPanel();
+		bluePanel.setBackground(new Color(0, 128, 255));
+		bluePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("BLUE");
+            	gifPanel.setColorMask(0, 128, 255);
+            }
+        });
+		colorPanel.add(bluePanel);	
+		JLabel lblNewLabel_14 = new JLabel("B");
+		bluePanel.add(lblNewLabel_14);
+		
+		JPanel pinkPanel = new JPanel();
+		pinkPanel.setBackground(new Color(255, 0, 255));
+		pinkPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("PINK");
+            	gifPanel.setColorMask(255, 0, 255);
+            }
+        });
+		colorPanel.add(pinkPanel);
+		JLabel lblNewLabel_15 = new JLabel("P");
+		pinkPanel.add(lblNewLabel_15);
+		
+		JPanel violetPanel = new JPanel();
+		violetPanel.setBackground(new Color(128, 0, 255));
+		violetPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	newColorText.setText("VIOLET");
+            	gifPanel.setColorMask(128, 0, 255);
+            }
+        });
+		colorPanel.add(violetPanel);
+		JLabel lblNewLabel_16 = new JLabel("V");
+		violetPanel.add(lblNewLabel_16);
 		
 		JLabel lblNewLabel_4 = new JLabel("Pattern");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JComboBox patternCombo = new JComboBox();
+		JComboBox<String> patternCombo = new JComboBox<>();
+		patternCombo.addItem("NONE");
+		patternCombo.setSelectedItem("NONE");
 		
 		newPatternText = new JTextField();
 		newPatternText.setColumns(10);
@@ -231,106 +342,151 @@ public class DataEntryForms {
 		JLabel lblNewLabel_3 = new JLabel("Logo");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JComboBox logoCombo = new JComboBox();
+		JComboBox<String> logoCombo = new JComboBox<>();
+		logoCombo.addItem("NONE");
+		logoCombo.setSelectedItem("NONE");
 		
 		newLogoText = new JTextField();
 		newLogoText.setColumns(10);
 		
 		JLabel lblNewLabel_5 = new JLabel("Ball Number");
 		lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
-		InputPanel.setLayout(new GridLayout(0, 6, 20, 5));
-		InputPanel.add(lblNewLabel);
-		InputPanel.add(brandCombo);
-		InputPanel.add(newBrandText);
-		InputPanel.add(lblNewLabel_1);
-		InputPanel.add(typeCombo);
-		InputPanel.add(newTypeText);
-		InputPanel.add(lblNewLabel_2);
-		InputPanel.add(ColorPanel);
-		InputPanel.add(newColorText);
-		InputPanel.add(lblNewLabel_4);
-		InputPanel.add(patternCombo);
-		InputPanel.add(newPatternText);
-		InputPanel.add(lblNewLabel_3);
-		InputPanel.add(logoCombo);
-		InputPanel.add(newLogoText);
-		InputPanel.add(lblNewLabel_5);
+		inputPanel.setLayout(new GridLayout(0, 6, 20, 5));
+		inputPanel.add(lblNewLabel);
+		inputPanel.add(brandCombo);
+		inputPanel.add(newBrandText);
+		inputPanel.add(lblNewLabel_1);
+		inputPanel.add(typeCombo);
+		inputPanel.add(newTypeText);
+		inputPanel.add(lblNewLabel_2);
+		inputPanel.add(colorPanel);
+		inputPanel.add(newColorText);
+		inputPanel.add(lblNewLabel_4);
+		inputPanel.add(patternCombo);
+		inputPanel.add(newPatternText);
+		inputPanel.add(lblNewLabel_3);
+		inputPanel.add(logoCombo);
+		inputPanel.add(newLogoText);
+		inputPanel.add(lblNewLabel_5);
 		
-		JPanel BallNumberPanel = new JPanel();
-		InputPanel.add(BallNumberPanel);
-		BallNumberPanel.setLayout(new GridLayout(1, 0, 10, 0));
-		
-		JPanel panel_16 = new JPanel();
-		panel_16.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_16.setBackground(new Color(255, 255, 255));
-		BallNumberPanel.add(panel_16);
-		
-		JLabel lblNewLabel_17 = new JLabel("1");
-		panel_16.add(lblNewLabel_17);
-		
-		JPanel panel_17 = new JPanel();
-		panel_17.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_17.setBackground(new Color(255, 255, 255));
-		BallNumberPanel.add(panel_17);
-		
-		JLabel lblNewLabel_18 = new JLabel("2");
-		panel_17.add(lblNewLabel_18);
-		
-		JPanel panel_18 = new JPanel();
-		panel_18.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_18.setBackground(new Color(255, 255, 255));
-		BallNumberPanel.add(panel_18);
-		
-		JLabel lblNewLabel_19 = new JLabel("3");
-		panel_18.add(lblNewLabel_19);
-		
-		JPanel panel_19 = new JPanel();
-		panel_19.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_19.setBackground(new Color(255, 255, 255));
-		BallNumberPanel.add(panel_19);
-		
-		JLabel lblNewLabel_20 = new JLabel("4");
-		panel_19.add(lblNewLabel_20);
-		
-		JPanel panel_3 = new JPanel();
-		InputPanel.add(panel_3);
-		panel_3.setLayout(new GridLayout(1, 0, 10, 0));
+		JPanel ballNumberPanel = new JPanel();
+		inputPanel.add(ballNumberPanel);
+		ballNumberPanel.setLayout(new GridLayout(1, 0, 10, 0));
 		
 		JSpinner ballNumberSpinner = new JSpinner();
+		
+		JPanel onePanel = new JPanel();
+		onePanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		onePanel.setBackground(new Color(255, 255, 255));
+		onePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	ballNumberSpinner.setValue(1);
+            }
+        });
+		ballNumberPanel.add(onePanel);
+		JLabel lblNewLabel_17 = new JLabel("1");
+		onePanel.add(lblNewLabel_17);
+		
+		JPanel twoPanel = new JPanel();
+		twoPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		twoPanel.setBackground(new Color(255, 255, 255));
+		twoPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	ballNumberSpinner.setValue(2);
+            }
+        });
+		ballNumberPanel.add(twoPanel);
+		JLabel lblNewLabel_18 = new JLabel("2");
+		twoPanel.add(lblNewLabel_18);
+		
+		JPanel threePanel = new JPanel();
+		threePanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		threePanel.setBackground(new Color(255, 255, 255));
+		threePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	ballNumberSpinner.setValue(3);
+            }
+        });
+		ballNumberPanel.add(threePanel);
+		JLabel lblNewLabel_19 = new JLabel("3");
+		threePanel.add(lblNewLabel_19);
+		
+		JPanel fourPanel = new JPanel();
+		fourPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		fourPanel.setBackground(new Color(255, 255, 255));
+		fourPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	ballNumberSpinner.setValue(4);
+            }
+        });
+		ballNumberPanel.add(fourPanel);
+		JLabel lblNewLabel_20 = new JLabel("4");
+		fourPanel.add(lblNewLabel_20);
+		
+		JPanel panel_3 = new JPanel();
+		inputPanel.add(panel_3);
+		panel_3.setLayout(new GridLayout(1, 0, 10, 0));
+		
 		panel_3.add(ballNumberSpinner);
 		
 		JPanel panel_20 = new JPanel();
 		panel_3.add(panel_20);
 		
-		JPanel DatabasePanel = new JPanel();
-		DatabasePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel.add(DatabasePanel, BorderLayout.CENTER);
-		DatabasePanel.setLayout(new BorderLayout(0, 0));
+		previewPanel.add(gifPanel);
+		
+		headerPanel.add(inputPanel, BorderLayout.CENTER);	
+		headerPanel.add(previewPanel,  BorderLayout.EAST);
+		
+		panel.add(headerPanel, BorderLayout.NORTH);
+		
+		
+		JPanel databasePanel = new JPanel();
+		databasePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		panel.add(databasePanel, BorderLayout.CENTER);
+		databasePanel.setLayout(new BorderLayout(0, 0));
 		
 		JScrollPane scrollPane = new JScrollPane();
-		DatabasePanel.add(scrollPane);
+		databasePanel.add(scrollPane);
 		
 		table = new JTable();
 		table.setFillsViewportHeight(true);
-		table.setModel(new DefaultTableModel(
-			new Object[][] {
-			},
-			new String[] {
-			}
-		));
 		table.setDefaultEditor(Object.class, null); // Makes table not editable
 		scrollPane.setViewportView(table);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBackground(new Color(255, 255, 255));
-		DatabasePanel.add(panel_1, BorderLayout.NORTH);
+		databasePanel.add(panel_1, BorderLayout.NORTH);
 		
-		JPanel ActionPanel = new JPanel();
-		panel.add(ActionPanel, BorderLayout.SOUTH);
+		JPanel actionPanel = new JPanel();
+		panel.add(actionPanel, BorderLayout.SOUTH);
 		
-		JButton btnNewButton = new JButton("Add Entry");
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton entryButton = new JButton("Add Entry");
+		entryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				// Check to see if exact entry already exists
+				/*
+				String sql = "SELECT Quantity FROM dataform WHERE Brand = ? AND Type = ?";
+				try {
+					pst = conn.prepareStatement(sql);
+					pst.setString(1, newBrandText.getText());
+					pst.setString(2, newTypeText.getText());
+					
+					
+					pst.execute();
+					rs.close();
+					pst.close();
+				} catch(Exception e1) {
+					JOptionPane.showMessageDialog(null, e1);
+				}*/
+				
 				String sql = "INSERT INTO dataform (Brand, Type, Quantity, Color, Logo, Pattern, BallNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
 				try {
 					pst = conn.prepareStatement(sql);
@@ -349,18 +505,36 @@ public class DataEntryForms {
 				} catch(Exception e1) {
 					JOptionPane.showMessageDialog(null, e1);
 				}
+				model.setRowCount(0);
+				updateTable();
 			}
 		});
-		ActionPanel.add(btnNewButton);
+		actionPanel.add(entryButton);
 		
-		JButton btnNewButton_1 = new JButton("Update");
-		btnNewButton_1.addActionListener(new ActionListener() {
+		JButton refreshButton = new JButton("Refresh Table");
+		refreshButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				model.setRowCount(0);
+				updateTable();
 			}
-		});
-		ActionPanel.add(btnNewButton_1);
+		}); 
+		actionPanel.add(refreshButton);
 		
-		JButton btnNewButton_2 = new JButton("Delete");
-		ActionPanel.add(btnNewButton_2);
+		JButton deleteButton = new JButton("Delete Selected");
+		deleteButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+	            // Get the selected row index
+	            int selectedRow = table.getSelectedRow();
+	            if (selectedRow != -1) { // Check if a row is selected
+	            	deleteFromDatabase(table.getValueAt(selectedRow, 0).toString(), table.getValueAt(selectedRow, 1).toString(), table.getValueAt(selectedRow, 3).toString(), table.getValueAt(selectedRow, 4).toString(), table.getValueAt(selectedRow, 5).toString(), table.getValueAt(selectedRow, 6).toString());
+	                model.removeRow(selectedRow); // Remove the selected row
+	            } else {
+	                JOptionPane.showMessageDialog(frame, "No Row Selected", "Error", JOptionPane.ERROR_MESSAGE);
+	            }
+			}
+		}); 
+		actionPanel.add(deleteButton);
+		model.setRowCount(0);
+		updateTable();
 	}
 }

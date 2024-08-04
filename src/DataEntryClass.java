@@ -6,7 +6,6 @@ public class DataEntryClass {
 		try {
 			Class.forName("org.sqlite.JDBC");
 			Connection conn = DriverManager.getConnection("jdbc:sqlite:C:\\Users\\tec31\\eclipse-workspace\\GolfBallLog\\dataform.db");
-			JOptionPane.showMessageDialog(null, "Connection Success");
 			return conn;
 		} catch(Exception e) {
 			JOptionPane.showMessageDialog(null, e);
