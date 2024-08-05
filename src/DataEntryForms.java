@@ -29,6 +29,8 @@ import javax.swing.border.EtchedBorder;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 public class DataEntryForms {
 
@@ -461,9 +463,25 @@ public class DataEntryForms {
 		table.setDefaultEditor(Object.class, null); // Makes table not editable
 		scrollPane.setViewportView(table);
 		
-		JPanel panel_1 = new JPanel();
-		panel_1.setBackground(new Color(255, 255, 255));
-		databasePanel.add(panel_1, BorderLayout.NORTH);
+		JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new EmptyBorder(0, 10, 10, 10));
+		scrollPane.setRowHeaderView(panel_2);
+		panel_2.setLayout(new BorderLayout(0, 0));
+		
+		JLabel lblNewLabel_21 = new JLabel("Brands Quick Select");
+		panel_2.add(lblNewLabel_21, BorderLayout.NORTH);
+		
+		JPanel panel_4 = new JPanel();
+		panel_4.setBorder(new EmptyBorder(10, 0, 0, 0));
+		panel_2.add(panel_4, BorderLayout.CENTER);
+		panel_4.setLayout(new BoxLayout(panel_4, BoxLayout.Y_AXIS));
+		
+		JLabel lblNewLabel_22 = new JLabel("New label");
+		lblNewLabel_22.setEnabled(false);
+		panel_4.add(lblNewLabel_22);
+		
+		JLabel lblNewLabel_23 = new JLabel("New label");
+		panel_4.add(lblNewLabel_23);
 		
 		JPanel actionPanel = new JPanel();
 		panel.add(actionPanel, BorderLayout.SOUTH);
@@ -472,39 +490,53 @@ public class DataEntryForms {
 		entryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Check to see if exact entry already exists
-				/*
 				String sql = "SELECT Quantity FROM dataform WHERE Brand = ? AND Type = ?";
 				try {
 					pst = conn.prepareStatement(sql);
 					pst.setString(1, newBrandText.getText());
 					pst.setString(2, newTypeText.getText());
 					
-					
-					pst.execute();
-					rs.close();
-					pst.close();
-				} catch(Exception e1) {
-					JOptionPane.showMessageDialog(null, e1);
-				}*/
-				
-				String sql = "INSERT INTO dataform (Brand, Type, Quantity, Color, Logo, Pattern, BallNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
-				try {
-					pst = conn.prepareStatement(sql);
-					pst.setString(1, newBrandText.getText());
-					pst.setString(2, newTypeText.getText());
-					pst.setInt(3, 1);
-					pst.setString(4, newColorText.getText());
-					pst.setString(5, newLogoText.getText());
-					pst.setString(6, newPatternText.getText());
-					pst.setString(7, ballNumberSpinner.getValue().toString());
-					
-					
-					pst.execute();
+					rs = pst.executeQuery();
+					if(rs.next()) {
+						sql = "UPDATE dataform SET Quantity = Quantity + 1 WHERE Brand = ? AND Type = ?";
+						try {
+							pst = conn.prepareStatement(sql);
+							pst.setString(1, newBrandText.getText());
+							pst.setString(2, newTypeText.getText());
+							
+							
+							pst.execute();
+							rs.close();
+							pst.close();
+						} catch(Exception e1) {
+							JOptionPane.showMessageDialog(null, e1);
+						}
+					} else {
+						sql = "INSERT INTO dataform (Brand, Type, Quantity, Color, Logo, Pattern, BallNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
+						try {
+							pst = conn.prepareStatement(sql);
+							pst.setString(1, newBrandText.getText());
+							pst.setString(2, newTypeText.getText());
+							pst.setInt(3, 1);
+							pst.setString(4, newColorText.getText());
+							pst.setString(5, newLogoText.getText());
+							pst.setString(6, newPatternText.getText());
+							pst.setString(7, ballNumberSpinner.getValue().toString());
+							
+							
+							pst.execute();
+							rs.close();
+							pst.close();
+						} catch(Exception e1) {
+							JOptionPane.showMessageDialog(null, e1);
+						}
+					}
 					rs.close();
 					pst.close();
 				} catch(Exception e1) {
 					JOptionPane.showMessageDialog(null, e1);
 				}
+				
 				model.setRowCount(0);
 				updateTable();
 			}
