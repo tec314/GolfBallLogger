@@ -8,7 +8,7 @@ public class GifPanel extends JPanel {
     private Timer timer;
     private int currentFrame = 0;
     private double scaleFactor = 1.0; // Default scale factor is 1 (no scaling)
-    private Color maskColor = new Color(255, 255, 255, 150);;
+    private Color maskColor = new Color(255, 255, 255, 0);;
 
     public GifPanel(String gifPath, double scaleFactor) {
         gifIcon = new ImageIcon(gifPath);
@@ -28,7 +28,11 @@ public class GifPanel extends JPanel {
     }
 
     public void setColorMask(int r, int g, int b) {
-    	maskColor = new Color(r, g, b, 150);
+    	if(r == 255 && g == 255 && b == 255) {
+    		maskColor = new Color(r, g, b, 0);
+    	} else {
+    		maskColor = new Color(r, g, b, 150);
+    	}
     }
     
     @Override

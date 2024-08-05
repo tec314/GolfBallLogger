@@ -23,6 +23,8 @@ import javax.swing.JTextPane;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import java.sql.*;
+import java.util.ArrayList;
+
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.EtchedBorder;
@@ -47,6 +49,7 @@ public class DataEntryForms {
 	ResultSet rs = null;
 	
 	DefaultTableModel model = new DefaultTableModel();
+	ArrayList<String> brandsColumn = new ArrayList<>();
 	
 	/**
 	 * Launch the application.
@@ -91,6 +94,32 @@ public class DataEntryForms {
 		}
 		
 	}
+	
+	public void getBrands() {
+		String sql = "SELECT * FROM dataform";
+		try {
+			String storedBrand;
+			Boolean flag;
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				flag = true;
+				storedBrand = rs.getString("Brand");
+				System.out.println(storedBrand);
+				for(int i = 0; i < brandsColumn.size(); i++) {
+					if(storedBrand.equals(brandsColumn.get(i))) {
+						flag = false;
+					}
+				}
+				if(flag || brandsColumn.size() == 0) {
+					brandsColumn.add(storedBrand);
+				}
+			}
+			
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, e);
+		}
+	}
 
 	public void deleteFromDatabase(String b, String t, String c, String l, String p, String bn) {
     	String sql = "DELETE FROM dataform WHERE Brand = ? AND Type = ? AND Color = ? AND Logo = ? AND Pattern = ? AND BallNumber = ?";
@@ -107,8 +136,8 @@ public class DataEntryForms {
 			pst.execute();
 			rs.close();
 			pst.close();
-		} catch(Exception e1) {
-			JOptionPane.showMessageDialog(null, e1);
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, e);
 		}
 	}
 	
@@ -116,12 +145,14 @@ public class DataEntryForms {
 	 * Create the application.
 	 */
 	public DataEntryForms() {
+		conn = DataEntryClass.ConnectDB();
+		getBrands();
 		initialize();
 		
 		Object col[] = {"Brand", "Type", "Quantity", "Color", "Logo", "Pattern", "Ball Number"};
 		model.setColumnIdentifiers(col);
 		table.setModel(model);
-		conn = DataEntryClass.ConnectDB();
+		
 		
 		model.setRowCount(0);
 		updateTable();
@@ -171,9 +202,14 @@ public class DataEntryForms {
 		JPanel colorPanel = new JPanel();
 		colorPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
+		JPanel colorTextPanel = new JPanel();
+		colorTextPanel.setLayout(new GridLayout(1, 0, 10, 0));
+		
 		newColorText = new JTextField();
 		newColorText.setColumns(10);
 		newColorText.setText("WHITE"); // Default Value
+		colorTextPanel.add(newColorText);
+		colorTextPanel.add(new JPanel());
 		
 		GifPanel gifPanel = new GifPanel("C:/Users/tec31/eclipse-workspace/GolfBallLog/res/color_preview.gif", 3);
 		
@@ -334,6 +370,7 @@ public class DataEntryForms {
 		JLabel lblNewLabel_4 = new JLabel("Pattern");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		
+		JPanel patternPanel = new JPanel();
 		JComboBox<String> patternCombo = new JComboBox<>();
 		patternCombo.addItem("NONE");
 		patternCombo.setSelectedItem("NONE");
@@ -341,9 +378,15 @@ public class DataEntryForms {
 		newPatternText = new JTextField();
 		newPatternText.setColumns(10);
 		
+		JCheckBox isPatternCheckbox = new JCheckBox("N/A");
+		
+		patternPanel.add(newPatternText);
+		patternPanel.add(isPatternCheckbox);
+		
 		JLabel lblNewLabel_3 = new JLabel("Logo");
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		
+		JPanel logoPanel = new JPanel();
 		JComboBox<String> logoCombo = new JComboBox<>();
 		logoCombo.addItem("NONE");
 		logoCombo.setSelectedItem("NONE");
@@ -351,24 +394,29 @@ public class DataEntryForms {
 		newLogoText = new JTextField();
 		newLogoText.setColumns(10);
 		
+		JCheckBox isLogoCheckbox = new JCheckBox("N/A");
+		
+		logoPanel.add(newLogoText);
+		logoPanel.add(isLogoCheckbox);
+		
 		JLabel lblNewLabel_5 = new JLabel("Ball Number");
 		lblNewLabel_5.setHorizontalAlignment(SwingConstants.CENTER);
 		inputPanel.setLayout(new GridLayout(0, 6, 20, 5));
 		inputPanel.add(lblNewLabel);
 		inputPanel.add(brandCombo);
 		inputPanel.add(newBrandText);
+		inputPanel.add(lblNewLabel_3);
+		inputPanel.add(logoCombo);
+		inputPanel.add(logoPanel);
 		inputPanel.add(lblNewLabel_1);
 		inputPanel.add(typeCombo);
 		inputPanel.add(newTypeText);
-		inputPanel.add(lblNewLabel_2);
-		inputPanel.add(colorPanel);
-		inputPanel.add(newColorText);
 		inputPanel.add(lblNewLabel_4);
 		inputPanel.add(patternCombo);
-		inputPanel.add(newPatternText);
-		inputPanel.add(lblNewLabel_3);
-		inputPanel.add(logoCombo);
-		inputPanel.add(newLogoText);
+		inputPanel.add(patternPanel);
+		inputPanel.add(lblNewLabel_2);
+		inputPanel.add(colorPanel);
+		inputPanel.add(colorTextPanel);
 		inputPanel.add(lblNewLabel_5);
 		
 		JPanel ballNumberPanel = new JPanel();
@@ -452,11 +500,17 @@ public class DataEntryForms {
 		
 		JPanel databasePanel = new JPanel();
 		databasePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		databasePanel.setLayout(new BorderLayout(0, 0));
 		panel.add(databasePanel, BorderLayout.CENTER);
 		databasePanel.setLayout(new BorderLayout(0, 0));
 		
 		JScrollPane scrollPane = new JScrollPane();
-		databasePanel.add(scrollPane);
+		databasePanel.add(scrollPane, BorderLayout.CENTER);
+		JPanel filterPanel = new JPanel();
+		
+		filterPanel.add(new JLabel("Filters"));
+		
+		databasePanel.add(filterPanel, BorderLayout.NORTH);
 		
 		table = new JTable();
 		table.setFillsViewportHeight(true);
@@ -471,17 +525,16 @@ public class DataEntryForms {
 		JLabel lblNewLabel_21 = new JLabel("Brands Quick Select");
 		panel_2.add(lblNewLabel_21, BorderLayout.NORTH);
 		
-		JPanel panel_4 = new JPanel();
-		panel_4.setBorder(new EmptyBorder(10, 0, 0, 0));
-		panel_2.add(panel_4, BorderLayout.CENTER);
-		panel_4.setLayout(new BoxLayout(panel_4, BoxLayout.Y_AXIS));
+		JPanel brandsPanel = new JPanel();
+		brandsPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		panel_2.add(brandsPanel, BorderLayout.CENTER);
+		brandsPanel.setLayout(new BoxLayout(brandsPanel, BoxLayout.Y_AXIS));
 		
-		JLabel lblNewLabel_22 = new JLabel("New label");
-		lblNewLabel_22.setEnabled(false);
-		panel_4.add(lblNewLabel_22);
-		
-		JLabel lblNewLabel_23 = new JLabel("New label");
-		panel_4.add(lblNewLabel_23);
+		for(int i = 0; i < brandsColumn.size(); i++) {
+			JLabel brand = new JLabel(brandsColumn.get(i).toString());
+			brand.setEnabled(false);
+			brandsPanel.add(brand);
+		}
 		
 		JPanel actionPanel = new JPanel();
 		panel.add(actionPanel, BorderLayout.SOUTH);
@@ -538,6 +591,13 @@ public class DataEntryForms {
 				}
 				
 				model.setRowCount(0);
+				getBrands();
+				brandsPanel.removeAll();
+				for(int i = 0; i < brandsColumn.size(); i++) {
+					JLabel brand = new JLabel(brandsColumn.get(i));
+					brand.setEnabled(false);
+					brandsPanel.add(brand);
+				}
 				updateTable();
 			}
 		});
