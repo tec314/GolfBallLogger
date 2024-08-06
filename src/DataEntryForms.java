@@ -49,7 +49,9 @@ public class DataEntryForms {
 	ResultSet rs = null;
 	
 	DefaultTableModel model = new DefaultTableModel();
+	
 	ArrayList<String> brandsColumn = new ArrayList<>();
+	ArrayList<String> typesColumn = new ArrayList<>();
 	
 	/**
 	 * Launch the application.
@@ -67,6 +69,8 @@ public class DataEntryForms {
 		});
 	}
 	
+	/*
+	// NOT NEEDED SOON
 	public void updateTable() {
 		conn = DataEntryClass.ConnectDB();
 		if(conn != null) {
@@ -92,7 +96,45 @@ public class DataEntryForms {
 				JOptionPane.showMessageDialog(null, e);
 			}
 		}
-		
+	}
+	*/
+	
+	// Find way to use this to replace updateTable()?
+	public void updateTableByBrandType(String brand, String type) {
+		conn = DataEntryClass.ConnectDB();
+		if(conn != null) {
+			model.setRowCount(0);
+			
+			String sql = "SELECT * FROM dataform WHERE Brand = ? AND Type = ?";
+			
+			try {
+				pst = conn.prepareStatement(sql);
+	
+				pst.setString(1, brand);
+				pst.setString(2, type);
+				
+				rs = pst.executeQuery();
+				Object[] columnData = new Object[5];
+				
+				while(rs.next()) {
+					columnData[0] = rs.getInt("Quantity");
+					columnData[1] = rs.getString("Color");
+					columnData[2] = rs.getString("Logo");
+					columnData[3] = rs.getString("Pattern");
+					columnData[4] = rs.getString("BallNumber");
+					
+					model.addRow(columnData);
+
+					for(int i = 0; i < columnData.length; i++) {
+						System.out.println(columnData[i].toString());
+					}
+				}
+			} catch(Exception e) {
+				JOptionPane.showMessageDialog(null, e);
+			}
+		} else {
+			JOptionPane.showMessageDialog(null, "conn is null!");
+		}
 	}
 	
 	public void getBrands() {
@@ -105,7 +147,6 @@ public class DataEntryForms {
 			while(rs.next()) {
 				flag = true;
 				storedBrand = rs.getString("Brand");
-				System.out.println(storedBrand);
 				for(int i = 0; i < brandsColumn.size(); i++) {
 					if(storedBrand.equals(brandsColumn.get(i))) {
 						flag = false;
@@ -113,6 +154,36 @@ public class DataEntryForms {
 				}
 				if(flag || brandsColumn.size() == 0) {
 					brandsColumn.add(storedBrand);
+				}
+			}
+			
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, e);
+		}
+	}
+	
+	public void getTypes(String brand) {
+		String sql = "SELECT * FROM dataform WHERE Brand = ?";
+		try {
+			String storedType;
+			Boolean flag;
+			pst = conn.prepareStatement(sql);
+			
+			pst.setString(1, brand);
+			
+			rs = pst.executeQuery();
+			
+			typesColumn.clear(); // Resets types column for new query
+			while(rs.next()) {
+				flag = true;
+				storedType = rs.getString("Type");
+				for(int i = 0; i < typesColumn.size(); i++) {
+					if(storedType.equals(typesColumn.get(i))) {
+						flag = false;
+					}
+				}
+				if(flag || typesColumn.size() == 0) {
+					typesColumn.add(storedType);
 				}
 			}
 			
@@ -149,13 +220,12 @@ public class DataEntryForms {
 		getBrands();
 		initialize();
 		
-		Object col[] = {"Brand", "Type", "Quantity", "Color", "Logo", "Pattern", "Ball Number"};
+		Object col[] = {"Quantity", "Color", "Logo", "Pattern", "Ball Number"};
 		model.setColumnIdentifiers(col);
 		table.setModel(model);
 		
 		
 		model.setRowCount(0);
-		updateTable();
 	}
 
 	/**
@@ -517,25 +587,60 @@ public class DataEntryForms {
 		table.setDefaultEditor(Object.class, null); // Makes table not editable
 		scrollPane.setViewportView(table);
 		
+		JPanel brandTypePanel = new JPanel();
+		brandTypePanel.setLayout(new GridLayout(0, 2, 0, 0));
+		scrollPane.setRowHeaderView(brandTypePanel);
+		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new EmptyBorder(0, 10, 10, 10));
-		scrollPane.setRowHeaderView(panel_2);
 		panel_2.setLayout(new BorderLayout(0, 0));
+		JPanel panel_44 = new JPanel();
+		panel_44.setBorder(new EmptyBorder(0, 10, 10, 10));
+		panel_44.setLayout(new BorderLayout(0, 0));
 		
 		JLabel lblNewLabel_21 = new JLabel("Brands Quick Select");
 		panel_2.add(lblNewLabel_21, BorderLayout.NORTH);
+		JLabel lblNewLabel_22 = new JLabel("Types Quick Select");
+		panel_44.add(lblNewLabel_22, BorderLayout.NORTH);
 		
 		JPanel brandsPanel = new JPanel();
-		brandsPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		brandsPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
 		panel_2.add(brandsPanel, BorderLayout.CENTER);
 		brandsPanel.setLayout(new BoxLayout(brandsPanel, BoxLayout.Y_AXIS));
 		
+		JPanel typesPanel = new JPanel();
+		typesPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+		panel_44.add(typesPanel, BorderLayout.CENTER);
+		typesPanel.setLayout(new BoxLayout(typesPanel, BoxLayout.Y_AXIS));
+		
 		for(int i = 0; i < brandsColumn.size(); i++) {
-			JLabel brand = new JLabel(brandsColumn.get(i).toString());
-			brand.setEnabled(false);
+			JButton brand = new JButton(brandsColumn.get(i));
+			brand.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					typesPanel.removeAll();
+					getTypes(brand.getText());
+					for(int j = 0; j < typesColumn.size(); j++) {
+						JButton type = new JButton(typesColumn.get(j));
+						type.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent d) {
+								updateTableByBrandType(brand.getText(), type.getText());
+							}
+						});
+						typesPanel.add(type);
+						typesPanel.revalidate();
+						typesPanel.repaint();
+						
+					}
+				}
+			});
 			brandsPanel.add(brand);
+			brandsPanel.revalidate();
+			brandsPanel.repaint();
 		}
 		
+		brandTypePanel.add(panel_2);	
+		brandTypePanel.add(panel_44);
+        
 		JPanel actionPanel = new JPanel();
 		panel.add(actionPanel, BorderLayout.SOUTH);
 		
@@ -590,15 +695,34 @@ public class DataEntryForms {
 					JOptionPane.showMessageDialog(null, e1);
 				}
 				
-				model.setRowCount(0);
 				getBrands();
 				brandsPanel.removeAll();
 				for(int i = 0; i < brandsColumn.size(); i++) {
-					JLabel brand = new JLabel(brandsColumn.get(i));
-					brand.setEnabled(false);
+					JButton brand = new JButton(brandsColumn.get(i));
+					brand.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							typesPanel.removeAll();
+							getTypes(brand.getText());
+							for(int j = 0; j < typesColumn.size(); j++) {
+								JButton type = new JButton(typesColumn.get(j));
+								type.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent d) {
+										updateTableByBrandType(brand.getText(), type.getText());
+									}
+								});
+								typesPanel.add(type);
+								typesPanel.revalidate();
+								typesPanel.repaint();
+							}
+						}
+					});
+					System.out.println(brand.getText() + " button added");
 					brandsPanel.add(brand);
+					brandsPanel.revalidate();
+					brandsPanel.repaint();
 				}
-				updateTable();
+				
+				// If extra types were added, find a way to refresh them without needing to click the already selected brand
 			}
 		});
 		actionPanel.add(entryButton);
@@ -607,7 +731,6 @@ public class DataEntryForms {
 		refreshButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				model.setRowCount(0);
-				updateTable();
 			}
 		}); 
 		actionPanel.add(refreshButton);
@@ -626,7 +749,5 @@ public class DataEntryForms {
 			}
 		}); 
 		actionPanel.add(deleteButton);
-		model.setRowCount(0);
-		updateTable();
 	}
 }
