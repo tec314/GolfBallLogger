@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 
@@ -8,7 +9,11 @@ public class GifPanel extends JPanel {
     private Timer timer;
     private int currentFrame = 0;
     private double scaleFactor = 1.0; // Default scale factor is 1 (no scaling)
-    private Color maskColor = new Color(255, 255, 255, 0);;
+    private Color totalMaskColor = new Color(255, 255, 255, 0);
+    private Color topHalfMaskColor = new Color(255, 255, 255, 0);
+    private Color bottomHalfMaskColor = new Color(255, 255, 255, 0);
+    
+    private String pos = "";
 
     public GifPanel(String gifPath, double scaleFactor) {
         gifIcon = new ImageIcon(gifPath);
@@ -27,11 +32,18 @@ public class GifPanel extends JPanel {
         setDoubleBuffered(true); // Ensure double buffering is enabled
     }
 
-    public void setColorMask(int r, int g, int b) {
+    public void setColorMask(int r, int g, int b, String pos) {
+    	this.pos = pos;
     	if(r == 255 && g == 255 && b == 255) {
-    		maskColor = new Color(r, g, b, 0);
+    		totalMaskColor = new Color(r, g, b, 0);
     	} else {
-    		maskColor = new Color(r, g, b, 150);
+    		totalMaskColor = new Color(r, g, b, 150);
+    	}
+    	
+    	if(pos.equals("th")) {
+    		topHalfMaskColor = totalMaskColor;
+    	} else if(pos.equals("bh")) { 
+    		bottomHalfMaskColor = totalMaskColor;
     	}
     }
     
@@ -58,19 +70,23 @@ public class GifPanel extends JPanel {
 
             // Draw the scaled GIF image onto the BufferedImage
             g2d.drawImage(gifIcon.getImage(), 0, 0, frameWidth, frameHeight, this);
-
-            // Create a circular mask
-            Shape circle = new Ellipse2D.Double(54, 10, frameWidth-108, frameHeight-20);
-            g2d.setClip(circle);
-
-            // Set up the mask color
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, maskColor.getAlpha() / 255f));
-            g2d.setColor(maskColor);
-            g2d.fill(circle);
-
-            // Reset the clip to draw the circular mask correctly
-            g2d.setClip(null);
             
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, totalMaskColor.getAlpha() / 255f));
+            
+            // Create a circular mask
+            if(pos.equals("th") || pos.equals("bh")) {
+            	g2d.setColor(bottomHalfMaskColor);
+            	Arc2D.Double semicircle1 = new Arc2D.Double(x+54, y+10, frameWidth-108, frameHeight-20, 0, -180, Arc2D.CHORD);
+            	g2d.fill(semicircle1);
+            	g2d.setColor(topHalfMaskColor);
+            	Arc2D.Double semicircle2 = new Arc2D.Double(x+54, y+10, frameWidth-108, frameHeight-20, 0, 180, Arc2D.CHORD);
+            	g2d.fill(semicircle2);
+            } else if(pos.equals("")) {
+            	g2d.setColor(totalMaskColor);
+            	Shape circle = new Ellipse2D.Double(54, 10, frameWidth-108, frameHeight-20);
+            	g2d.fill(circle);
+            }
+
             // Draw the BufferedImage with the circular mask applied
             g.drawImage(bufferedImage, x, y, this);
 

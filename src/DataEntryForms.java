@@ -15,7 +15,9 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.JScrollBar;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -37,12 +39,20 @@ import javax.swing.border.LineBorder;
 public class DataEntryForms {
 
 	private JFrame frame;
-	private JTextField newBrandText;
-	private JTextField newTypeText;
+	private JTextField newBrandText = new JTextField();
+	private JTextField newTypeText = new JTextField();
 	private JTextField newColorText;
 	private JTextField newPatternText;
 	private JTextField newLogoText;
 	private JTable table;
+	
+	private JPanel colorPanel = new JPanel();
+	private GifPanel gifPanel = new GifPanel("C:/Users/tec31/eclipse-workspace/GolfBallLog/res/color_preview.gif", 3);
+	
+	private JTextField brandCombo = new JTextField();
+	private JTextField typeCombo = new JTextField();
+	private JPanel brandPanel = new JPanel();
+	private JPanel typePanel = new JPanel();
 
 	Connection conn = null;
 	PreparedStatement pst = null;
@@ -52,6 +62,11 @@ public class DataEntryForms {
 	
 	ArrayList<String> brandsColumn = new ArrayList<>();
 	ArrayList<String> typesColumn = new ArrayList<>();
+	ArrayList<String> logos = new ArrayList<>();
+	ArrayList<String> patterns = new ArrayList<>();
+	
+	private String selectedBrand;
+	private String selectedType;
 	
 	/**
 	 * Launch the application.
@@ -124,10 +139,6 @@ public class DataEntryForms {
 					columnData[4] = rs.getString("BallNumber");
 					
 					model.addRow(columnData);
-
-					for(int i = 0; i < columnData.length; i++) {
-						System.out.println(columnData[i].toString());
-					}
 				}
 			} catch(Exception e) {
 				JOptionPane.showMessageDialog(null, e);
@@ -140,10 +151,13 @@ public class DataEntryForms {
 	public void getBrands() {
 		String sql = "SELECT * FROM dataform";
 		try {
-			String storedBrand;
+			String storedBrand = "";
 			Boolean flag;
 			pst = conn.prepareStatement(sql);
+			
 			rs = pst.executeQuery();
+			
+			brandsColumn.clear();
 			while(rs.next()) {
 				flag = true;
 				storedBrand = rs.getString("Brand");
@@ -156,6 +170,7 @@ public class DataEntryForms {
 					brandsColumn.add(storedBrand);
 				}
 			}
+			brandsColumn.sort(String::compareToIgnoreCase);		
 			
 		} catch(Exception e) {
 			JOptionPane.showMessageDialog(null, e);
@@ -186,11 +201,254 @@ public class DataEntryForms {
 					typesColumn.add(storedType);
 				}
 			}
+			typesColumn.sort(String::compareToIgnoreCase);
 			
 		} catch(Exception e) {
 			JOptionPane.showMessageDialog(null, e);
 		}
 	}
+	
+	public void refreshBrandType() {
+		// Gets the ball brands/types in the database and displays relevant info in table based on brand/type selection button combo
+		brandPanel.removeAll();
+		getBrands();
+		for(int i = 0; i < brandsColumn.size(); i++) {
+			JButton brand = new JButton(brandsColumn.get(i));
+			brand.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					brandCombo.setText(brand.getText());
+					newBrandText.setText(brand.getText());
+					selectedBrand = brand.getText();
+					
+					typePanel.removeAll();
+					getTypes(brand.getText());
+					for(int j = 0; j < typesColumn.size(); j++) {
+						JButton type = new JButton(typesColumn.get(j));
+						type.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent d) {
+								typeCombo.setText(type.getText());
+								newTypeText.setText(type.getText());
+								selectedType = type.getText();
+								
+								updateTableByBrandType(brand.getText(), type.getText());
+							}
+						});
+						typePanel.add(type);
+						typePanel.revalidate();
+						typePanel.repaint();
+						
+					}
+				}
+			});
+			brandPanel.add(brand);
+			brandPanel.revalidate();
+			brandPanel.repaint();
+		}
+	}
+	/*
+	public JPanel colorBar(int order) {
+		JPanel returnPanel = new JPanel();
+		
+		JPanel whitePanel = new JPanel();
+		whitePanel.setBackground(new Color(255, 255, 255));
+		whitePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("WHITE");
+            	} else {
+            		newColorText.setText("/WHITE");
+            	}
+            	gifPanel.setColorMask(255, 255, 255);
+            }
+        });
+		returnPanel.add(whitePanel);	
+		JLabel lblNewLabel_6 = new JLabel("W");
+		whitePanel.add(lblNewLabel_6);
+		
+		JPanel redPanel = new JPanel();
+		redPanel.setBackground(new Color(255, 0, 0));
+		redPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("RED");
+            	} else {
+            		newColorText.setText("/RED");
+            	}
+            	gifPanel.setColorMask(255, 0, 0);
+            }
+        });
+		returnPanel.add(redPanel);
+		JLabel lblNewLabel_7 = new JLabel("R");
+		redPanel.add(lblNewLabel_7);
+		
+		JPanel orangePanel = new JPanel();
+		orangePanel.setBackground(new Color(255, 128, 0));
+		orangePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("ORANGE");
+            	} else {
+            		newColorText.setText("/ORANGE");
+            	}
+            	gifPanel.setColorMask(255, 128, 0);
+            }
+        });
+		returnPanel.add(orangePanel);
+		JLabel lblNewLabel_8 = new JLabel("O");
+		orangePanel.add(lblNewLabel_8);
+		
+		JPanel yellowPanel = new JPanel();
+		yellowPanel.setBackground(new Color(255, 255, 0));
+		yellowPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("YELLOW");
+            	} else {
+            		newColorText.setText("/YELOW");
+            	}
+            	gifPanel.setColorMask(255, 255, 0);
+            }
+        });
+		returnPanel.add(yellowPanel);	
+		JLabel lblNewLabel_9 = new JLabel("Y");
+		yellowPanel.add(lblNewLabel_9);
+		
+		JPanel limePanel = new JPanel();
+		limePanel.setBackground(new Color(198, 255, 0));
+		limePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("LIME");
+            	} else {
+            		newColorText.setText("/LIME");
+            	}
+            	gifPanel.setColorMask(198, 255, 0);
+            }
+        });
+		returnPanel.add(limePanel);
+		JLabel lblNewLabel_10 = new JLabel("L");
+		limePanel.add(lblNewLabel_10);
+		
+		JPanel greenPanel = new JPanel();
+		greenPanel.setBackground(new Color(0, 255, 0));
+		greenPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("GREEN");
+            	} else {
+            		newColorText.setText("/GREEN");
+            	}
+            	gifPanel.setColorMask(0, 255, 0);
+            }
+        });
+		returnPanel.add(greenPanel);
+		JLabel lblNewLabel_11 = new JLabel("G");
+		greenPanel.add(lblNewLabel_11);
+		
+		JPanel forestPanel = new JPanel();
+		forestPanel.setBackground(new Color(0, 128, 0));
+		forestPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("FOREST");
+            	} else {
+            		newColorText.setText("/FOREST");
+            	}
+            	gifPanel.setColorMask(0, 128, 0);
+            }
+        });
+		returnPanel.add(forestPanel);
+		JLabel lblNewLabel_12 = new JLabel("F");
+		forestPanel.add(lblNewLabel_12);
+		
+		JPanel cyanPanel = new JPanel();
+		cyanPanel.setBackground(new Color(0, 206, 230));
+		cyanPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("CYAN");
+            	} else {
+            		newColorText.setText("/CYAN");
+            	}
+            	gifPanel.setColorMask(0, 206, 230);
+            }
+        });
+		returnPanel.add(cyanPanel);
+		JLabel lblNewLabel_13 = new JLabel("C");
+		cyanPanel.add(lblNewLabel_13);
+		
+		JPanel bluePanel = new JPanel();
+		bluePanel.setBackground(new Color(0, 128, 255));
+		bluePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("BLUE");
+            	} else {
+            		newColorText.setText("/BLUE");
+            	}
+            	gifPanel.setColorMask(0, 128, 255);
+            }
+        });
+		returnPanel.add(bluePanel);	
+		JLabel lblNewLabel_14 = new JLabel("B");
+		bluePanel.add(lblNewLabel_14);
+		
+		JPanel pinkPanel = new JPanel();
+		pinkPanel.setBackground(new Color(255, 0, 255));
+		pinkPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("PINK");
+            	} else {
+            		newColorText.setText("/PINK");
+            	}
+            	gifPanel.setColorMask(255, 0, 255);
+            }
+        });
+		returnPanel.add(pinkPanel);
+		JLabel lblNewLabel_15 = new JLabel("P");
+		pinkPanel.add(lblNewLabel_15);
+		
+		JPanel violetPanel = new JPanel();
+		violetPanel.setBackground(new Color(128, 0, 255));
+		violetPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Action to perform on click
+            	if(order == 1) {
+            		newColorText.setText("VIOLET");
+            	} else {
+            		newColorText.setText("/VIOLET");
+            	}
+            	gifPanel.setColorMask(128, 0, 255);
+            }
+        });
+		returnPanel.add(violetPanel);
+		JLabel lblNewLabel_16 = new JLabel("V");
+		violetPanel.add(lblNewLabel_16);
+		
+		return returnPanel;
+	}*/
 
 	public void deleteFromDatabase(String b, String t, String c, String l, String p, String bn) {
     	String sql = "DELETE FROM dataform WHERE Brand = ? AND Type = ? AND Color = ? AND Logo = ? AND Pattern = ? AND BallNumber = ?";
@@ -219,6 +477,7 @@ public class DataEntryForms {
 		conn = DataEntryClass.ConnectDB();
 		getBrands();
 		initialize();
+		refreshBrandType();
 		
 		Object col[] = {"Quantity", "Color", "Logo", "Pattern", "Ball Number"};
 		model.setColumnIdentifiers(col);
@@ -253,24 +512,15 @@ public class DataEntryForms {
 		JLabel lblNewLabel = new JLabel("Ball Brand");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JComboBox brandCombo = new JComboBox();
-		
-		newBrandText = new JTextField();
 		newBrandText.setColumns(10);
 		
 		JLabel lblNewLabel_1 = new JLabel("Ball Type");
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JComboBox typeCombo = new JComboBox();
-		
-		newTypeText = new JTextField();
 		newTypeText.setColumns(10);
 		
 		JLabel lblNewLabel_2 = new JLabel("Color");
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		JPanel colorPanel = new JPanel();
-		colorPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		JPanel colorTextPanel = new JPanel();
 		colorTextPanel.setLayout(new GridLayout(1, 0, 10, 0));
@@ -279,163 +529,43 @@ public class DataEntryForms {
 		newColorText.setColumns(10);
 		newColorText.setText("WHITE"); // Default Value
 		colorTextPanel.add(newColorText);
-		colorTextPanel.add(new JPanel());
 		
-		GifPanel gifPanel = new GifPanel("C:/Users/tec31/eclipse-workspace/GolfBallLog/res/color_preview.gif", 3);
+		brandCombo.setEditable(false);
+		typeCombo.setEditable(false);
 		
-		JPanel whitePanel = new JPanel();
-		whitePanel.setBackground(new Color(255, 255, 255));
-		whitePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("WHITE");
-            	gifPanel.setColorMask(255, 255, 255);
-            }
-        });
-		colorPanel.add(whitePanel);	
-		JLabel lblNewLabel_6 = new JLabel("W");
-		whitePanel.add(lblNewLabel_6);
 		
-		JPanel redPanel = new JPanel();
-		redPanel.setBackground(new Color(255, 0, 0));
-		redPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("RED");
-            	gifPanel.setColorMask(255, 0, 0);
-            }
-        });
-		colorPanel.add(redPanel);
-		JLabel lblNewLabel_7 = new JLabel("R");
-		redPanel.add(lblNewLabel_7);
 		
-		JPanel orangePanel = new JPanel();
-		orangePanel.setBackground(new Color(255, 128, 0));
-		orangePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("ORANGE");
-            	gifPanel.setColorMask(255, 128, 0);
-            }
-        });
-		colorPanel.add(orangePanel);
-		JLabel lblNewLabel_8 = new JLabel("O");
-		orangePanel.add(lblNewLabel_8);
+		JCheckBox isHalfAndHalf = new JCheckBox("Half & Half");
+		isHalfAndHalf.setSelected(false);
+		JCheckBox isGradient = new JCheckBox("Gradient");
 		
-		JPanel yellowPanel = new JPanel();
-		yellowPanel.setBackground(new Color(255, 255, 0));
-		yellowPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("YELLOW");
-            	gifPanel.setColorMask(255, 255, 0);
-            }
-        });
-		colorPanel.add(yellowPanel);	
-		JLabel lblNewLabel_9 = new JLabel("Y");
-		yellowPanel.add(lblNewLabel_9);
+		ColorBarPanel colorBar1 = new ColorBarPanel(gifPanel, "");
+		ColorBarPanel colorBar2 = new ColorBarPanel(gifPanel, "th");
+		ColorBarPanel colorBar3 = new ColorBarPanel(gifPanel, "bh");
 		
-		JPanel limePanel = new JPanel();
-		limePanel.setBackground(new Color(198, 255, 0));
-		limePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("LIME");
-            	gifPanel.setColorMask(198, 255, 0);
-            }
-        });
-		colorPanel.add(limePanel);
-		JLabel lblNewLabel_10 = new JLabel("L");
-		limePanel.add(lblNewLabel_10);
+		isHalfAndHalf.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				colorPanel.removeAll();
+				if(isHalfAndHalf.isSelected()) {
+					colorPanel.setLayout(new GridLayout(2, 0, 0, 0));
+					colorPanel.add(colorBar2);
+					colorPanel.add(colorBar3);
+					newColorText.setText(colorBar2.getColorPick() + "/" + colorBar3.getColorPick());
+					inputPanel.revalidate();
+					inputPanel.repaint();
+				} else {
+					colorPanel.setLayout(new GridLayout(1, 0, 0, 0));
+					colorPanel.add(colorBar1);
+					newColorText.setText(colorBar1.getColorPick());
+					inputPanel.revalidate();
+					inputPanel.repaint();
+				}
+			}
+		});
 		
-		JPanel greenPanel = new JPanel();
-		greenPanel.setBackground(new Color(0, 255, 0));
-		greenPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("GREEN");
-            	gifPanel.setColorMask(0, 255, 0);
-            }
-        });
-		colorPanel.add(greenPanel);
-		JLabel lblNewLabel_11 = new JLabel("G");
-		greenPanel.add(lblNewLabel_11);
-		
-		JPanel forestPanel = new JPanel();
-		forestPanel.setBackground(new Color(0, 128, 0));
-		forestPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("FOREST");
-            	gifPanel.setColorMask(0, 128, 0);
-            }
-        });
-		colorPanel.add(forestPanel);
-		JLabel lblNewLabel_12 = new JLabel("F");
-		forestPanel.add(lblNewLabel_12);
-		
-		JPanel cyanPanel = new JPanel();
-		cyanPanel.setBackground(new Color(0, 206, 230));
-		cyanPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("CYAN");
-            	gifPanel.setColorMask(0, 206, 230);
-            }
-        });
-		colorPanel.add(cyanPanel);
-		JLabel lblNewLabel_13 = new JLabel("C");
-		cyanPanel.add(lblNewLabel_13);
-		
-		JPanel bluePanel = new JPanel();
-		bluePanel.setBackground(new Color(0, 128, 255));
-		bluePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("BLUE");
-            	gifPanel.setColorMask(0, 128, 255);
-            }
-        });
-		colorPanel.add(bluePanel);	
-		JLabel lblNewLabel_14 = new JLabel("B");
-		bluePanel.add(lblNewLabel_14);
-		
-		JPanel pinkPanel = new JPanel();
-		pinkPanel.setBackground(new Color(255, 0, 255));
-		pinkPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("PINK");
-            	gifPanel.setColorMask(255, 0, 255);
-            }
-        });
-		colorPanel.add(pinkPanel);
-		JLabel lblNewLabel_15 = new JLabel("P");
-		pinkPanel.add(lblNewLabel_15);
-		
-		JPanel violetPanel = new JPanel();
-		violetPanel.setBackground(new Color(128, 0, 255));
-		violetPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // Action to perform on click
-            	newColorText.setText("VIOLET");
-            	gifPanel.setColorMask(128, 0, 255);
-            }
-        });
-		colorPanel.add(violetPanel);
-		JLabel lblNewLabel_16 = new JLabel("V");
-		violetPanel.add(lblNewLabel_16);
+		colorTextPanel.add(isHalfAndHalf);
+		colorTextPanel.add(isGradient);
 		
 		JLabel lblNewLabel_4 = new JLabel("Pattern");
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
@@ -449,6 +579,16 @@ public class DataEntryForms {
 		newPatternText.setColumns(10);
 		
 		JCheckBox isPatternCheckbox = new JCheckBox("N/A");
+		isPatternCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(isPatternCheckbox.isSelected()) {
+					newPatternText.setText("N/A");
+				} else {
+					newPatternText.setText("");
+				}
+			}
+		});
 		
 		patternPanel.add(newPatternText);
 		patternPanel.add(isPatternCheckbox);
@@ -465,6 +605,16 @@ public class DataEntryForms {
 		newLogoText.setColumns(10);
 		
 		JCheckBox isLogoCheckbox = new JCheckBox("N/A");
+		isLogoCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(isLogoCheckbox.isSelected()) {
+					newLogoText.setText("N/A");
+				} else {
+					newLogoText.setText("");
+				}
+			}
+		});
 		
 		logoPanel.add(newLogoText);
 		logoPanel.add(isLogoCheckbox);
@@ -562,6 +712,10 @@ public class DataEntryForms {
 		
 		previewPanel.add(gifPanel);
 		
+		JPanel titlePanel = new JPanel();
+		titlePanel.add(new JLabel("New Ball Entry"));
+		
+		headerPanel.add(titlePanel, BorderLayout.NORTH);	
 		headerPanel.add(inputPanel, BorderLayout.CENTER);	
 		headerPanel.add(previewPanel,  BorderLayout.EAST);
 		
@@ -578,7 +732,24 @@ public class DataEntryForms {
 		databasePanel.add(scrollPane, BorderLayout.CENTER);
 		JPanel filterPanel = new JPanel();
 		
-		filterPanel.add(new JLabel("Filters"));
+		filterPanel.add(new JLabel("Filters       "));
+		
+		JCheckBox isLogoEnabled = new JCheckBox("Disable Logos");
+		JCheckBox isPatternsEnabled = new JCheckBox("Disable Patterns");
+		
+		filterPanel.add(isLogoEnabled);
+		filterPanel.add(isPatternsEnabled);
+		
+		isLogoEnabled.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(isLogoEnabled.isSelected()) {
+					System.out.println("EEEEEE");
+				} else {
+					System.out.println("AAAAAA");
+				}
+			}
+		});
 		
 		databasePanel.add(filterPanel, BorderLayout.NORTH);
 		
@@ -598,45 +769,18 @@ public class DataEntryForms {
 		panel_44.setBorder(new EmptyBorder(0, 10, 10, 10));
 		panel_44.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblNewLabel_21 = new JLabel("Brands Quick Select");
+		JLabel lblNewLabel_21 = new JLabel("Brand Select");
 		panel_2.add(lblNewLabel_21, BorderLayout.NORTH);
-		JLabel lblNewLabel_22 = new JLabel("Types Quick Select");
+		JLabel lblNewLabel_22 = new JLabel("Type Select");
 		panel_44.add(lblNewLabel_22, BorderLayout.NORTH);
 		
-		JPanel brandsPanel = new JPanel();
-		brandsPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-		panel_2.add(brandsPanel, BorderLayout.CENTER);
-		brandsPanel.setLayout(new BoxLayout(brandsPanel, BoxLayout.Y_AXIS));
+		brandPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		panel_2.add(brandPanel, BorderLayout.CENTER);
+		brandPanel.setLayout(new BoxLayout(brandPanel, BoxLayout.Y_AXIS));
 		
-		JPanel typesPanel = new JPanel();
-		typesPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-		panel_44.add(typesPanel, BorderLayout.CENTER);
-		typesPanel.setLayout(new BoxLayout(typesPanel, BoxLayout.Y_AXIS));
-		
-		for(int i = 0; i < brandsColumn.size(); i++) {
-			JButton brand = new JButton(brandsColumn.get(i));
-			brand.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					typesPanel.removeAll();
-					getTypes(brand.getText());
-					for(int j = 0; j < typesColumn.size(); j++) {
-						JButton type = new JButton(typesColumn.get(j));
-						type.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent d) {
-								updateTableByBrandType(brand.getText(), type.getText());
-							}
-						});
-						typesPanel.add(type);
-						typesPanel.revalidate();
-						typesPanel.repaint();
-						
-					}
-				}
-			});
-			brandsPanel.add(brand);
-			brandsPanel.revalidate();
-			brandsPanel.repaint();
-		}
+		typePanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+		panel_44.add(typePanel, BorderLayout.CENTER);
+		typePanel.setLayout(new BoxLayout(typePanel, BoxLayout.Y_AXIS));
 		
 		brandTypePanel.add(panel_2);	
 		brandTypePanel.add(panel_44);
@@ -648,19 +792,27 @@ public class DataEntryForms {
 		entryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Check to see if exact entry already exists
-				String sql = "SELECT Quantity FROM dataform WHERE Brand = ? AND Type = ?";
+				String sql = "SELECT Quantity FROM dataform WHERE Brand = ? AND Type = ? AND Color = ? AND Logo = ? AND Pattern = ? AND BallNumber = ?";
 				try {
 					pst = conn.prepareStatement(sql);
 					pst.setString(1, newBrandText.getText());
 					pst.setString(2, newTypeText.getText());
+					pst.setString(3, newColorText.getText());
+					pst.setString(4, newLogoText.getText());
+					pst.setString(5, newPatternText.getText());
+					pst.setString(6, ballNumberSpinner.getValue().toString());
 					
 					rs = pst.executeQuery();
 					if(rs.next()) {
-						sql = "UPDATE dataform SET Quantity = Quantity + 1 WHERE Brand = ? AND Type = ?";
+						sql = "UPDATE dataform SET Quantity = Quantity + 1 WHERE Brand = ? AND Type = ? AND Color = ? AND Logo = ? AND Pattern = ? AND BallNumber = ?";
 						try {
 							pst = conn.prepareStatement(sql);
 							pst.setString(1, newBrandText.getText());
 							pst.setString(2, newTypeText.getText());
+							pst.setString(3, newColorText.getText());
+							pst.setString(4, newLogoText.getText());
+							pst.setString(5, newPatternText.getText());
+							pst.setString(6, ballNumberSpinner.getValue().toString());
 							
 							
 							pst.execute();
@@ -695,32 +847,7 @@ public class DataEntryForms {
 					JOptionPane.showMessageDialog(null, e1);
 				}
 				
-				getBrands();
-				brandsPanel.removeAll();
-				for(int i = 0; i < brandsColumn.size(); i++) {
-					JButton brand = new JButton(brandsColumn.get(i));
-					brand.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							typesPanel.removeAll();
-							getTypes(brand.getText());
-							for(int j = 0; j < typesColumn.size(); j++) {
-								JButton type = new JButton(typesColumn.get(j));
-								type.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent d) {
-										updateTableByBrandType(brand.getText(), type.getText());
-									}
-								});
-								typesPanel.add(type);
-								typesPanel.revalidate();
-								typesPanel.repaint();
-							}
-						}
-					});
-					System.out.println(brand.getText() + " button added");
-					brandsPanel.add(brand);
-					brandsPanel.revalidate();
-					brandsPanel.repaint();
-				}
+				refreshBrandType();
 				
 				// If extra types were added, find a way to refresh them without needing to click the already selected brand
 			}
@@ -741,11 +868,43 @@ public class DataEntryForms {
 	            // Get the selected row index
 	            int selectedRow = table.getSelectedRow();
 	            if (selectedRow != -1) { // Check if a row is selected
-	            	deleteFromDatabase(table.getValueAt(selectedRow, 0).toString(), table.getValueAt(selectedRow, 1).toString(), table.getValueAt(selectedRow, 3).toString(), table.getValueAt(selectedRow, 4).toString(), table.getValueAt(selectedRow, 5).toString(), table.getValueAt(selectedRow, 6).toString());
+	            	deleteFromDatabase(selectedBrand, selectedType, table.getValueAt(selectedRow, 1).toString(), table.getValueAt(selectedRow, 2).toString(), table.getValueAt(selectedRow, 3).toString(), table.getValueAt(selectedRow, 4).toString());
 	                model.removeRow(selectedRow); // Remove the selected row
 	            } else {
 	                JOptionPane.showMessageDialog(frame, "No Row Selected", "Error", JOptionPane.ERROR_MESSAGE);
 	            }
+	            
+	            // Not as used, may consider reworking duplicate section?
+				brandPanel.removeAll();
+				getBrands();
+				for(int i = 0; i < brandsColumn.size(); i++) {
+					JButton brand = new JButton(brandsColumn.get(i));
+					brand.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							brandCombo.setText(brand.getText());
+							newBrandText.setText(brand.getText());
+							selectedBrand = brand.getText();
+							
+							typePanel.removeAll();
+							getTypes(brand.getText());
+							for(int j = 0; j < typesColumn.size(); j++) {
+								JButton type = new JButton(typesColumn.get(j));
+								type.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent d) {
+										typeCombo.setText(type.getText());
+										newTypeText.setText(type.getText());
+										selectedType = type.getText();
+										
+										updateTableByBrandType(brand.getText(), type.getText());
+									}
+								});
+								typePanel.add(type);
+								typePanel.revalidate();
+								typePanel.repaint();
+							}
+						}
+					});
+				}
 			}
 		}); 
 		actionPanel.add(deleteButton);
