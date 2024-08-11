@@ -877,34 +877,7 @@ public class DataEntryForms {
 	            // Not as used, may consider reworking duplicate section?
 				brandPanel.removeAll();
 				getBrands();
-				for(int i = 0; i < brandsColumn.size(); i++) {
-					JButton brand = new JButton(brandsColumn.get(i));
-					brand.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							brandCombo.setText(brand.getText());
-							newBrandText.setText(brand.getText());
-							selectedBrand = brand.getText();
-							
-							typePanel.removeAll();
-							getTypes(brand.getText());
-							for(int j = 0; j < typesColumn.size(); j++) {
-								JButton type = new JButton(typesColumn.get(j));
-								type.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent d) {
-										typeCombo.setText(type.getText());
-										newTypeText.setText(type.getText());
-										selectedType = type.getText();
-										
-										updateTableByBrandType(brand.getText(), type.getText());
-									}
-								});
-								typePanel.add(type);
-								typePanel.revalidate();
-								typePanel.repaint();
-							}
-						}
-					});
-				}
+				refreshBrandType();
 			}
 		}); 
 		actionPanel.add(deleteButton);
