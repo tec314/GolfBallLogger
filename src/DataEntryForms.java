@@ -40,6 +40,8 @@ public class DataEntryForms {
 	private JTextField newTypeText = new JTextField();
 	private JTextField newColorText1 = new JTextField();
 	private JTextField newColorText2 = new JTextField();
+	JComboBox<String> patternCombo = new JComboBox<>();
+	JComboBox<String> logoCombo = new JComboBox<>();
 	private JTextField newPatternText;
 	private JTextField newLogoText;
 	private JTable table;
@@ -206,7 +208,49 @@ public class DataEntryForms {
 		}
 	}
 	
-	public void refreshBrandType() {
+	public void getPatterns() {
+		String sql = "SELECT Pattern FROM dataform";
+		try {			
+			rs = pst.executeQuery();
+			
+			patterns.clear(); // Resets types column for new query
+			patternCombo.removeAllItems();
+			patternCombo.addItem("NONE");
+			while(rs.next()) {
+				patterns.add(rs.getString("Pattern"));
+			}
+			patterns.sort(String::compareToIgnoreCase);
+			for(int i = 0; i < patterns.size(); i++) {
+				patternCombo.addItem(patterns.get(i));
+			}
+			
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, e);
+		}
+	}
+	
+	public void getLogos() {
+		String sql = "SELECT Logo FROM dataform";
+		try {			
+			rs = pst.executeQuery();
+			
+			logos.clear(); // Resets types column for new query
+			logoCombo.removeAllItems();
+			logoCombo.addItem("NONE");
+			while(rs.next()) {
+				logos.add(rs.getString("Logo"));
+			}
+			logos.sort(String::compareToIgnoreCase);
+			for(int i = 0; i < logos.size(); i++) {
+				logoCombo.addItem(logos.get(i));
+			}
+			
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, e);
+		}
+	}
+	
+	public void refreshData() {
 		// Gets the ball brands/types in the database and displays relevant info in table based on brand/type selection button combo
 		brandPanel.removeAll();
 		getBrands();
@@ -238,6 +282,10 @@ public class DataEntryForms {
 					}
 				}
 			});
+			
+			getPatterns();
+			getLogos();
+			
 			brandPanel.add(brand);
 			brandPanel.revalidate();
 			brandPanel.repaint();
@@ -271,7 +319,7 @@ public class DataEntryForms {
 		conn = DataEntryClass.ConnectDB();
 		getBrands();
 		initialize();
-		refreshBrandType();
+		refreshData();
 		
 		Object col[] = {"Quantity", "Color", "Logo", "Pattern", "Ball Number"};
 		model.setColumnIdentifiers(col);
@@ -384,7 +432,6 @@ public class DataEntryForms {
 		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JPanel patternPanel = new JPanel();
-		JComboBox<String> patternCombo = new JComboBox<>();
 		patternCombo.addItem("NONE");
 		patternCombo.setSelectedItem("NONE");
 		
@@ -396,12 +443,20 @@ public class DataEntryForms {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(isPatternCheckbox.isSelected()) {
-					newPatternText.setText("N/A");
+					newPatternText.setText("NONE");
 				} else {
 					newPatternText.setText("");
 				}
 			}
 		});
+		
+		patternCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedItem = (String) patternCombo.getSelectedItem();
+                newPatternText.setText(selectedItem);
+            }
+        });
 		
 		patternPanel.add(newPatternText);
 		patternPanel.add(isPatternCheckbox);
@@ -410,7 +465,6 @@ public class DataEntryForms {
 		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JPanel logoPanel = new JPanel();
-		JComboBox<String> logoCombo = new JComboBox<>();
 		logoCombo.addItem("NONE");
 		logoCombo.setSelectedItem("NONE");
 		
@@ -428,6 +482,14 @@ public class DataEntryForms {
 				}
 			}
 		});
+		
+		logoCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedItem = (String) logoCombo.getSelectedItem();
+                newLogoText.setText(selectedItem);
+            }
+        });
 		
 		logoPanel.add(newLogoText);
 		logoPanel.add(isLogoCheckbox);
@@ -608,7 +670,7 @@ public class DataEntryForms {
 		JButton entryButton = new JButton("Add Entry");
 		entryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// Special logic for colors
+				// Logic for color pick entry
 				String colorEntry;
 				if(newColorText2.getText().equals("")) {
 					colorEntry = newColorText1.getText();
@@ -672,17 +734,18 @@ public class DataEntryForms {
 					JOptionPane.showMessageDialog(null, e1);
 				}
 				
-				refreshBrandType();
+				refreshData();
 				
 				// If extra types were added, find a way to refresh them without needing to click the already selected brand
 			}
 		});
 		actionPanel.add(entryButton);
 		
-		JButton refreshButton = new JButton("Refresh Table");
+		// No real functionality yet
+		JButton refreshButton = new JButton("Refresh Data");
 		refreshButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				model.setRowCount(0);
+				refreshData();
 			}
 		}); 
 		actionPanel.add(refreshButton);
@@ -699,10 +762,7 @@ public class DataEntryForms {
 	                JOptionPane.showMessageDialog(frame, "No Row Selected", "Error", JOptionPane.ERROR_MESSAGE);
 	            }
 	            
-	            // Not as used, may consider reworking duplicate section?
-				brandPanel.removeAll();
-				getBrands();
-				refreshBrandType();
+	            refreshData();
 			}
 		}); 
 		actionPanel.add(deleteButton);
