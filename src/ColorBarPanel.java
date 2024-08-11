@@ -6,13 +6,14 @@ import java.awt.event.MouseEvent;
 public class ColorBarPanel extends JPanel {
 
     private GifPanel gifPanel;
+    private JTextField textField;
     
-    private String colorPickText; 
     private String pos;
 
     // Constructor to initialize the class
-    public ColorBarPanel(GifPanel gifPanel, String pos) {
+    public ColorBarPanel(GifPanel gifPanel, JTextField textField, String pos) {
         this.gifPanel = gifPanel;
+        this.textField = textField;
         this.pos = pos;
         
         setLayout(new GridLayout());
@@ -34,24 +35,17 @@ public class ColorBarPanel extends JPanel {
     private void addColorPanel(Color color, String colorName, String label, Color colorMask) {
         JPanel colorPanel = new JPanel();
         colorPanel.setBackground(color);
+        colorPanel.setLayout(new GridBagLayout());
         colorPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-            	if(pos.equals("th")) {
-            		colorPickText = colorName;
-            	} else if(pos.equals("bh")) {
-            		
-            	}
+            	textField.setText(colorName);
                 gifPanel.setColorMask(colorMask.getRed(), colorMask.getGreen(), colorMask.getBlue(), pos);
             }
         });
         this.add(colorPanel);
         JLabel colorLabel = new JLabel(label);
         colorPanel.add(colorLabel);
-    }
-    
-    public String getColorPick() {
-    	return colorPickText;
     }
 }
  
