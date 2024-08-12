@@ -65,6 +65,9 @@ public class DataEntryForms {
 	ArrayList<String> logos = new ArrayList<>();
 	ArrayList<String> patterns = new ArrayList<>();
 	
+	ArrayList<JButton> brandButtons = new ArrayList<>();
+	ArrayList<JButton> typeButtons = new ArrayList<>();
+	
 	private String selectedBrand;
 	private String selectedType;
 	
@@ -161,8 +164,8 @@ public class DataEntryForms {
 			while(rs.next()) {
 				flag = true;
 				storedBrand = rs.getString("Brand");
-				for(int i = 0; i < brandsColumn.size(); i++) {
-					if(storedBrand.equals(brandsColumn.get(i))) {
+				for(String brandName : brandsColumn) {
+					if(storedBrand.equals(brandName)) {
 						flag = false;
 					}
 				}
@@ -170,6 +173,7 @@ public class DataEntryForms {
 					brandsColumn.add(storedBrand);
 				}
 			}
+			// Sorts brands in alphabetical order
 			brandsColumn.sort(String::compareToIgnoreCase);		
 			
 		} catch(Exception e) {
@@ -192,8 +196,8 @@ public class DataEntryForms {
 			while(rs.next()) {
 				flag = true;
 				storedType = rs.getString("Type");
-				for(int i = 0; i < typesColumn.size(); i++) {
-					if(storedType.equals(typesColumn.get(i))) {
+				for(String typeName : typesColumn) {
+					if(storedType.equals(typeName)) {
 						flag = false;
 					}
 				}
@@ -201,6 +205,7 @@ public class DataEntryForms {
 					typesColumn.add(storedType);
 				}
 			}
+			// Sorts types in alphabetical order
 			typesColumn.sort(String::compareToIgnoreCase);
 			
 		} catch(Exception e) {
@@ -221,8 +226,8 @@ public class DataEntryForms {
 				patterns.add(rs.getString("Pattern"));
 			}
 			patterns.sort(String::compareToIgnoreCase);
-			for(int i = 0; i < patterns.size(); i++) {
-				patternCombo.addItem(patterns.get(i));
+			for(String patternName : patterns) {
+				patternCombo.addItem(patternName);
 			}
 			
 		} catch(Exception e) {
@@ -243,8 +248,8 @@ public class DataEntryForms {
 				logos.add(rs.getString("Logo"));
 			}
 			logos.sort(String::compareToIgnoreCase);
-			for(int i = 0; i < logos.size(); i++) {
-				logoCombo.addItem(logos.get(i));
+			for(String logoName : logos) {
+				logoCombo.addItem(logoName);
 			}
 			
 		} catch(Exception e) {
@@ -255,29 +260,43 @@ public class DataEntryForms {
 	public void refreshData() {
 		// Gets the ball brands/types in the database and displays relevant info in table based on brand/type selection button combo
 		brandPanel.removeAll();
+		brandButtons.clear();
 		getBrands();
-		for(int i = 0; i < brandsColumn.size(); i++) {
-			JButton brand = new JButton(brandsColumn.get(i));
-			brand.addActionListener(new ActionListener() {
+		for(String brandName : brandsColumn) {
+			JButton brandButton = new JButton(brandName);
+			brandButton.setFocusPainted(false);
+			brandButtons.add(brandButton);
+			brandButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					brandCombo.setText(brand.getText());
-					newBrandText.setText(brand.getText());
-					selectedBrand = brand.getText();
+					for(JButton button : brandButtons) {
+						button.setBackground(UIManager.getColor("Button.background"));
+					}
+					brandButton.setBackground(new Color(173, 255, 252));
+					brandCombo.setText(brandButton.getText());
+					newBrandText.setText(brandButton.getText());
+					selectedBrand = brandButton.getText();
 					
 					typePanel.removeAll();
-					getTypes(brand.getText());
-					for(int j = 0; j < typesColumn.size(); j++) {
-						JButton type = new JButton(typesColumn.get(j));
-						type.addActionListener(new ActionListener() {
+					typeButtons.clear();
+					getTypes(brandButton.getText());
+					for(String typeName : typesColumn) {
+						JButton typeButton = new JButton(typeName);
+						typeButton.setFocusPainted(false);
+						typeButtons.add(typeButton);
+						typeButton.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent d) {
-								typeCombo.setText(type.getText());
-								newTypeText.setText(type.getText());
-								selectedType = type.getText();
+								for(JButton button : typeButtons) {
+									button.setBackground(UIManager.getColor("Button.background"));
+								}
+								typeButton.setBackground(new Color(173, 255, 252));
+								typeCombo.setText(typeButton.getText());
+								newTypeText.setText(typeButton.getText());
+								selectedType = typeButton.getText();
 								
-								updateTableByBrandType(brand.getText(), type.getText());
+								updateTableByBrandType(brandButton.getText(), typeButton.getText());
 							}
 						});
-						typePanel.add(type);
+						typePanel.add(typeButton);
 						typePanel.revalidate();
 						typePanel.repaint();
 						
@@ -288,7 +307,7 @@ public class DataEntryForms {
 			getPatterns();
 			getLogos();
 			
-			brandPanel.add(brand);
+			brandPanel.add(brandButton);
 			brandPanel.revalidate();
 			brandPanel.repaint();
 		}
