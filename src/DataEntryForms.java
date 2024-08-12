@@ -132,15 +132,17 @@ public class DataEntryForms {
 				pst.setString(2, type);
 				
 				rs = pst.executeQuery();
-				Object[] columnData = new Object[5];
+				Object[] columnData = new Object[7];
 				
 				while(rs.next()) {
-					columnData[0] = rs.getInt("Quantity");
-					columnData[1] = rs.getString("Color");
-					columnData[2] = rs.getString("Logo");
-					columnData[3] = rs.getString("Pattern");
-					columnData[4] = rs.getString("BallNumber");
-					
+					columnData[0] = rs.getString("Brand");
+					columnData[1] = rs.getString("Type");
+					columnData[2] = rs.getInt("Quantity");
+					columnData[3] = rs.getString("Color");
+					columnData[4] = rs.getString("Logo");
+					columnData[5] = rs.getString("Pattern");
+					columnData[6] = rs.getString("BallNumber");
+
 					model.addRow(columnData);
 				}
 			} catch(Exception e) {
@@ -341,8 +343,8 @@ public class DataEntryForms {
 		getBrands();
 		initialize();
 		refreshData();
-		
-		Object col[] = {"Quantity", "Color", "Logo", "Pattern", "Ball Number"};
+
+		Object col[] = {"Brand", "Type", "Quantity", "Color", "Logo", "Pattern", "Ball Number"};
 		model.setColumnIdentifiers(col);
 		table.setModel(model);
 		
@@ -390,9 +392,9 @@ public class DataEntryForms {
 		JPanel colorTextPanel = new JPanel();
 		JPanel colorCheckboxPanel = new JPanel();
 		
-		//newColorText1 = new JTextField();
-		//newColorText1.setColumns(10);
-		//newColorText1.setText("WHITE"); // Default Value
+		newColorText1 = new JTextField();
+		newColorText1.setColumns(10);
+		newColorText1.setText("WHITE"); // Default Value
 		
 		newColorText1.setColumns(10);
 		newColorText2.setColumns(10);
