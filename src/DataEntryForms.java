@@ -211,6 +211,7 @@ public class DataEntryForms {
 	public void getPatterns() {
 		String sql = "SELECT Pattern FROM dataform";
 		try {			
+			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			
 			patterns.clear(); // Resets types column for new query
@@ -232,6 +233,7 @@ public class DataEntryForms {
 	public void getLogos() {
 		String sql = "SELECT Logo FROM dataform";
 		try {			
+			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			
 			logos.clear(); // Resets types column for new query
@@ -333,7 +335,7 @@ public class DataEntryForms {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame("Golf Ball Logger");
 		frame.setBounds(0, 0, 1460, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(1, 0, 0, 0));
@@ -343,6 +345,7 @@ public class DataEntryForms {
 		panel.setLayout(new BorderLayout(0, 0));
 		
 		JPanel headerPanel = new JPanel();
+		headerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		frame.getContentPane().add(panel);
 		headerPanel.setLayout(new BorderLayout(0, 0));
 
@@ -476,7 +479,7 @@ public class DataEntryForms {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(isLogoCheckbox.isSelected()) {
-					newLogoText.setText("N/A");
+					newLogoText.setText("NONE");
 				} else {
 					newLogoText.setText("");
 				}
